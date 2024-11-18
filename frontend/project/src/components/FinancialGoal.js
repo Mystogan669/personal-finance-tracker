@@ -60,20 +60,77 @@ function FinancialGoals() {
 
 export default FinancialGoals;*/
 
-import React from 'react';
+import React, { useState } from 'react';
 import './FinancialGoal.css';
 
 function FinancialGoal() {
+    const [goal, setGoal] = useState('');
+    const [progress, setProgress] = useState(''); 
+    const [financeData, setFinanceData] = useState(null);
+    const [error, setError] = useState('');
+
+    const handleSaveGoal = async (e) => {
+        e.preventDefault();
+
+        if (!goal || !progress) {
+            setError('Please fill out both fields.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:4000/api/finance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    goal,
+                    progress: parseFloat(progress), 
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to save finance data');
+
+            const data = await response.json();
+
+            // Set the saved finance data
+            setFinanceData(data.data);
+            setGoal('');
+            setProgress('');
+            setError('');
+        } catch (err) {
+            console.error('Error saving finance data:', err);
+            setError('Failed to save finance data.');
+        }
+    };
+
     return (
         <div className="goal-page">
             <h2>Financial Goals</h2>
-            <div className="goal-summary">
-                <p>Goal: Save $5000</p>
-                <p>Progress: 60%</p>
-            </div>
+            <form onSubmit={handleSaveGoal} className="goal-form">
+                <input
+                    type="text"
+                    placeholder="Enter your financial goal"
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                />
+                <input
+                    type="number"
+                    placeholder="Enter your progress (%)"
+                    value={progress}
+                    onChange={(e) => setProgress(e.target.value)}
+                />
+                <button type="submit">Save Goal</button>
+            </form>
+
+            {error && <p className="error">{error}</p>}
+
+            {financeData && (
+                <div className="goal-summary">
+                    <p>Goal: {financeData.goal}</p>
+                    <p>Progress: {financeData.progress}%</p>
+                </div>
+            )}
         </div>
     );
 }
 
 export default FinancialGoal;
-

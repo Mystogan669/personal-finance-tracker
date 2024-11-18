@@ -84,21 +84,79 @@ const IncomePage = () => {
 
 export default IncomePage;*/
 
-import React from 'react';
+import React, { useState } from 'react';
 import './IncomePage.css';
 
 function IncomePage() {
+    const [income, setIncome] = useState([]); 
+    const [monthlyIncome, setMonthlyIncome] = useState(''); 
+    const [additionalIncome, setAdditionalIncome] = useState(''); 
+    const [error, setError] = useState('');
+
+    const handleAddIncome = async (e) => {
+        e.preventDefault();
+
+        if (!monthlyIncome || !additionalIncome) {
+            setError('Please fill out both fields.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:4000/api/income', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    monthly: parseFloat(monthlyIncome),
+                    additional: parseFloat(additionalIncome),
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to save income data');
+
+            const data = await response.json();
+
+            
+            setIncome([...income, data.data]);
+            setMonthlyIncome('');
+            setAdditionalIncome('');
+            setError('');
+        } catch (err) {
+            console.error('Error adding income:', err);
+            setError('Failed to add income.');
+        }
+    };
+
     return (
         <div className="income-page">
             <h2>Income Overview</h2>
+            <form className="income-form" onSubmit={handleAddIncome}>
+                <input
+                    type="number"
+                    placeholder="Monthly Income"
+                    value={monthlyIncome}
+                    onChange={(e) => setMonthlyIncome(e.target.value)}
+                />
+                <input
+                    type="number"
+                    placeholder="Additional Income"
+                    value={additionalIncome}
+                    onChange={(e) => setAdditionalIncome(e.target.value)}
+                />
+                <button type="submit">Add Income</button>
+            </form>
+            {error && <p className="error">{error}</p>}
             <div className="income-details">
-                <p>Monthly Income: $5000</p>
-                <p>Additional Income: $1000</p>
+                <h3>Income Details</h3>
+                <ul>
+                    {income.map((entry, index) => (
+                        <li key={index}>
+                            Monthly Income: ${entry.monthly}, Additional Income: ${entry.additional}
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
 }
 
 export default IncomePage;
-
-

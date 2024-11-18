@@ -43,15 +43,61 @@ function Savings() {
 
 export default Savings;*/
 
-import React from 'react';
+import React, { useState } from 'react';
 import './SavingsPage.css';
 
 function SavingsPage() {
+    const [savings, setSavings] = useState([]); 
+    const [savingInput, setSavingInput] = useState(''); 
+    const [error, setError] = useState(''); 
+
+    const handleAddSaving = async (e) => {
+        e.preventDefault();
+        if (!savingInput) {
+            setError('Please enter a valid saving amount.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:4000/api/savings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ saving: parseFloat(savingInput) }),
+            });
+
+            if (!response.ok) throw new Error('Failed to add saving');
+            const data = await response.json();
+
+          
+            setSavings([...savings, data.data]);
+            setSavingInput(''); 
+            setError('');
+        } catch (err) {
+            console.error('Error adding saving:', err);
+            setError('Failed to add saving.');
+        }
+    };
+
     return (
         <div className="savings-page">
             <h2>Track Your Savings</h2>
+            <form className="savings-form" onSubmit={handleAddSaving}>
+                <input
+                    type="number"
+                    placeholder="Enter Saving Amount"
+                    value={savingInput}
+                    onChange={(e) => setSavingInput(e.target.value)}
+                />
+                <button type="submit">Add Saving</button>
+            </form>
+            {error && <p className="error">{error}</p>}
             <div className="savings-summary">
-                <p>Total Savings: $2000</p>
+                <h3>Savings Summary</h3>
+                <ul>
+                    {savings.map((saving, index) => (
+                        <li key={index}>${saving.saving}</li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
