@@ -1,0 +1,24 @@
+.settings-page {
+    padding: 20px;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+}
+
+.settings-form {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.settings-form label {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.settings-form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border-radius: 5px;
+}
